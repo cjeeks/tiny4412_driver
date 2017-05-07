@@ -1,0 +1,304 @@
+/*
+ * FriendlyARM's Exynos4412 based TINY4412 board device tree source
+ *
+ * Copyright (c) 2013 Alex Ling <kasimling@gmail.com>
+ *
+ * Device tree source file for FriendlyARM's TINY4412 board which is based on
+ * Samsung's Exynos4412 SoC.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation.
+*/
+
+/dts-v1/;
+#include "exynos4412.dtsi"
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/usb4640/usb4640.h>
+
+/ {
+	model = "FriendlyARM TINY4412 board based on Exynos4412";
+	compatible = "friendlyarm,tiny4412", "samsung,exynos4412", "samsung,exynos4";
+
+	chosen {
+		stdout-path = &serial_0;
+		bootargs = "root=/dev/ram0 rw rootfstype=ext4 console=ttySAC0,115200 ethmac=13:14:52:52:51:7F init=/linuxrc earlyprintk";
+	};
+
+	memory {
+		reg = <0x40000000 0x40000000>;
+	};
+
+	leds {
+		compatible = "gpio-leds";
+		status = "disable";
+
+		led1 {
+			label = "led1";
+			gpios = <&gpm4 0 GPIO_ACTIVE_LOW>;
+			default-state = "off";
+			linux,default-trigger = "heartbeat";
+		};
+
+		led2 {
+			label = "led2";
+			gpios = <&gpm4 1 GPIO_ACTIVE_LOW>;
+			default-state = "off";
+		};
+
+		led3 {
+			label = "led3";
+			gpios = <&gpm4 2 GPIO_ACTIVE_LOW>;
+			default-state = "off";
+		};
+
+		led4 {
+			label = "led4";
+			gpios = <&gpm4 3 GPIO_ACTIVE_LOW>;
+			default-state = "off";
+			linux,default-trigger = "mmc0";
+		};
+	};
+
+	fixed-rate-clocks {
+		xxti {
+			compatible = "samsung,clock-xxti";
+			clock-frequency = <0>;
+		};
+
+		xusbxti {
+			compatible = "samsung,clock-xusbxti";
+			clock-frequency = <24000000>;
+		};
+	};
+
+    usb-hub {
+    	compatible = "smsc,usb4640";
+    	reset-gpios = <&gpm2 4 GPIO_ACTIVE_LOW>;
+    	initial-mode = <USB4640_MODE_HUB>;
+    };
+
+    regulators {
+    	compatible = "simple-bus";
+    	#address-cells = <1>;
+    	#size-cells = <0>;
+
+    	mmc_reg: regulator@0 {
+    		compatible = "regulator-fixed";
+    		reg = <0>;
+    		regulator-name = "VMEM_VDD_2.8V";
+    		regulator-min-microvolt = <2800000>;
+    		regulator-max-microvolt = <2800000>;
+    	};
+    };
+
+    interrupt_demo: interrupt_demo {
+            compatible         = "tiny4412,interrupt_demo";
+            tiny4412,int_gpio1 = <&gpx3 2 GPIO_ACTIVE_HIGH>;
+            tiny4412,int_gpio2 = <&gpx3 3 GPIO_ACTIVE_HIGH>;
+            tiny4412,int_gpio3 = <&gpx3 4 GPIO_ACTIVE_HIGH>;
+            tiny4412,int_gpio4 = <&gpx3 5 GPIO_ACTIVE_HIGH>;
+    };
+
+    adc_demo@126C0000 {
+		compatible	= "tiny4412,adc_demo";
+		reg = <0x126C 0x20>;
+		clocks = <&clock CLK_TSADC>;
+		clock-names = "timers";
+		interrupt-parent = <&combiner>;
+		interrupts = <10 3>;
+    };
+
+    led_pin {
+		compatible	= "tiny4412,led_demo";
+		pinctrl-names = "led_demo";
+		pinctrl-0 = <&led_demo>;
+		tiny4412,int_gpio1 = <&gpm4 0 GPIO_ACTIVE_HIGH>;
+		tiny4412,int_gpio2 = <&gpm4 1 GPIO_ACTIVE_HIGH>;
+		tiny4412,int_gpio3 = <&gpm4 2 GPIO_ACTIVE_HIGH>;
+		tiny4412,int_gpio4 = <&gpm4 3 GPIO_ACTIVE_HIGH>;
+	};
+
+	pwm_demo@139D0000 {
+		compatible	= "tiny4412,pwm_demo";
+		reg = <0x139D0000 0x14>;
+		pinctrl-names = "pwm-pin";
+		pinctrl-0 = <&pwm_pin>;
+		clock-names = "timers";
+	};
+
+	wdt_demo@10060000 {
+		compatible = "tiny4412,wdt_demo";
+		reg = <0x10060000 0x100>;
+		interrupts = <0 43 0>;
+		clocks = <&clock CLK_WDT>;
+		clock-names = "watchdog";
+	};
+
+	backlight_demo@139D0000 {
+		compatible = "tiny4412,backlight_demo";
+		reg = <0x139D0000 0x14>;
+		tiny4412,backlight = <&gpx1 2 GPIO_ACTIVE_HIGH>;
+		pinctrl-names = "backlight_out","backlight_in";
+		pinctrl-0 = <&backlight_out>;
+		pinctrl-1 = <&backlight_in>;
+		interrupts = <0 40 0>;
+		clocks = <&clock CLK_PWM>;
+		clock-names = "timers";
+	};
+
+	lcd_demo@11C00000 {
+		compatible = "tiny4412,lcd_demo";
+		reg = <0x11C00000 0x20c0 0x10010210 0x08 0x10023c80 0x04 0x1003c000 0x1000>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&lcd_demo>;
+	};
+
+	touch_demo {
+		compatible = "tiny4412,touch_demo";
+		interrupts = <6 0>;
+		interrupt-parent = <&gpx1>;
+		status = "okay";
+	};
+
+};
+
+&pinctrl_0 {
+        lcd_demo: lcd{
+                samsung,pins = "gpf0-0", "gpf0-1", "gpf0-2", "gpf0-3", "gpf0-4", "gpf0-5", "gpf0-6","gpf0-7", "gpf1-0", "gpf1-1", "gpf1-2", "gpf1-3", "gpf1-4", "gpf1-5", "gpf1-6","gpf1-7", "gpf2-0", "gpf2-1", "gpf2-2", "gpf2-3", "gpf2-4", "gpf2-5", "gpf2-6","gpf2-7", "gpf3-0", "gpf3-1", "gpf3-2", "gpf3-3";
+                samsung,pin-function = <0x2>;
+                samsung,pin-pud = <0x0>;
+                samsung,pin-drv = <0x0>;
+        };
+};
+
+&pinctrl_1{
+	led_demo: led{
+		samsung,pins = "gpm4-0", "gpm4-1", "gpm4-2", "gpm4-3";
+		samsung,pin-function = <0x1>;
+		samsung,pin-pud = <0x0>;
+		samsung,pin-drv = <0x0>;
+	};
+
+	backlight_out: backlight_out {
+		samsung,pins = "gpx1-2";
+		samsung,pin-function = <0x1>;
+		samsung,pin-pud = <0x0>;
+		samsung,pin-drv = <0x0>;
+	};
+
+	backlight_in: backlight_in {
+		samsung,pins = "gpx1-2";
+		samsung,pin-function = <0x0>;
+		samsung,pin-pud = <0x0>;
+		samsung,pin-drv = <0x0>;
+	};
+
+	pwm_pin: pwm_pin {
+		samsung,pins = "gpd0-0";
+		samsung,pin-function = <2>;
+		samsung,pin-pud = <0>;
+		samsung,pin-drv=<0>;
+	};
+};
+
+&rtc {
+	status = "okay";
+};
+
+&sdhci_2 {
+	bus-width = <4>;
+	pinctrl-0 = <&sd2_clk &sd2_cmd &sd2_cd &sd2_bus4>;
+	pinctrl-names = "default";
+	vmmc-supply = <&mmc_reg>;
+	status = "okay";
+};
+
+&mshc_0 {
+	num-slots = <1>;
+	broken-cd;
+	non-removable;
+	card-detect-delay = <200>;
+	vmmc-supply = <&mmc_reg>;
+	clock-frequency = <400000000>;
+	samsung,dw-mshc-ciu-div = <0>;
+	samsung,dw-mshc-sdr-timing = <2 3>;
+	samsung,dw-mshc-ddr-timing = <1 2>;
+	pinctrl-0 = <&sd4_clk &sd4_cmd &sd4_bus4 &sd4_bus8>;
+	pinctrl-names = "default";
+	status = "okay";
+	bus-width = <8>;
+	cap-mmc-highspeed;
+};
+
+&i2c_0 {
+	eeprom@50 {
+		compatible = "tiny4412,eeprom";
+		reg = <0x50>;
+	};
+};
+
+&i2c_1 {
+	status = "okay";
+	touch@38{
+		compatible = "tiny4412,touch";
+		reg = <0x38>;
+	};
+};
+
+&spi_0 {
+	status = "okay"	;
+	cs-gpios = <&gpb 1 GPIO_ACTIVE_HIGH>;
+	spi_flash@0 {
+		compatible = "tiny4412,spi_flash";
+		spi-max-frequency = <10000000>;
+		reg = <0>;
+		controller-data {
+			samsung,spi-feedback-delay = <0>;
+		};
+	};
+};
+
+&serial_0 {
+	status = "okay";
+};
+
+&serial_1 {
+	status = "okay";
+};
+
+&serial_2 {
+	status = "okay";
+};
+
+&serial_3 {
+	status = "okay";
+};
+
+&exynos_usbphy {
+	status = "okay";
+};
+
+&ehci {
+	status = "okay";
+	port@0 {
+		status = "okay";
+	};
+	port@1 {
+		status = "okay";
+	};
+	port@2 {
+		status = "okay";
+	};
+};
+
+&ohci {
+	status = "okay";
+	port@0 {
+		status = "okay";
+	};
+};
+
+&hsotg {
+	status = "okay";
+};

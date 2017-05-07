@@ -1,0 +1,1 @@
+cmd_/home/jimmy/disk/workspace/mydriver/tiny4412-led/tiny4412-led.ko := arm-none-eabi-ld -EL -r  -T ./scripts/module-common.lds --build-id  -o /home/jimmy/disk/workspace/mydriver/tiny4412-led/tiny4412-led.ko /home/jimmy/disk/workspace/mydriver/tiny4412-led/tiny4412-led.o /home/jimmy/disk/workspace/mydriver/tiny4412-led/tiny4412-led.mod.o
